@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Architecture Complete Evolution</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;500;700&family=Sarabun:wght@300;400;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --bg-dark: #0d1b2a;
+            --bg-panel: #1b263b;
+            --text-main: #e0e1dd;
+            --text-muted: #778da9;
+            --accent-gold: #c19a6b;
+            --accent-blue: #415a77;
+            --danger: #e63946;
+            --success: #2a9d8f;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        h1, h2, h3 { font-family: 'Kanit', sans-serif; color: var(--accent-gold); }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background-color: #070e17;
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--accent-blue);
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .sidebar h2 { font-size: 20px; padding: 0 20px 20px; border-bottom: 1px solid var(--accent-blue); margin-bottom: 10px; color: #fff; }
+
+        .nav-btn {
+            background: none; border: none; color: var(--text-muted); text-align: left;
+            padding: 12px 20px; font-family: 'Kanit', sans-serif; font-size: 16px;
+            cursor: pointer; transition: all 0.2s ease; border-left: 4px solid transparent;
+        }
+
+        .nav-btn:hover { background-color: var(--bg-panel); color: var(--text-main); }
+        .nav-btn.active { background-color: var(--bg-panel); color: var(--accent-gold); border-left-color: var(--accent-gold); }
+
+        /* Main Content */
+        .main-content { flex-grow: 1; padding: 40px; display: flex; flex-direction: column; overflow-y: auto; }
+        
+        .era-section { display: none; flex-direction: column; height: 100%; }
+        .era-section.active { display: flex; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .era-header { margin-bottom: 20px; flex-shrink: 0; position: relative;}
+        .era-header h1 { font-size: 36px; margin-bottom: 10px; }
+        .era-header p { color: var(--text-muted); font-size: 18px; line-height: 1.5; margin-bottom: 15px;}
+
+        /* Math Equation Box */
+        .math-eq-box {
+            background: rgba(0,0,0,0.3);
+            border-left: 4px solid var(--success);
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-family: 'Fira Code', monospace;
+            font-size: 16px;
+            color: var(--success);
+            display: inline-block;
+            margin-bottom: 15px;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.2);
+        }
+        .math-eq-box .math-label {
+            font-family: 'Sarabun', sans-serif;
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-right: 15px;
+            font-style: italic;
+        }
+
+        /* Simulator Container */
+        .simulator-container {
+            flex-grow: 1; background-color: var(--bg-panel); border-radius: 12px;
+            border-top: 4px solid var(--accent-gold); padding: 30px; display: flex;
+            flex-direction: column; align-items: center; justify-content: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); position: relative;
+        }
+
+        .scrollable-container { justify-content: flex-start; overflow-y: auto; align-items: stretch; }
+
+        .controls {
+            width: 100%; max-width: 600px; margin-top: 30px; padding: 20px;
+            background: rgba(0,0,0,0.2); border-radius: 8px; text-align: center;
+        }
+
+        input[type="range"] { width: 100%; margin: 15px 0; cursor: pointer; accent-color: var(--accent-gold); }
+        
+        .btn {
+            background-color: var(--accent-gold); color: var(--bg-dark); border: none;
+            padding: 10px 20px; font-family: 'Kanit', sans-serif; font-size: 16px;
+            font-weight: bold; border-radius: 5px; cursor: pointer; transition: 0.2s; margin: 5px;
+        }
+        .btn:hover { filter: brightness(1.2); }
+
+        /* Custom Styles for Simulators */
+        svg.graph { width: 100%; max-width: 400px; height: 300px; background: rgba(255,255,255,0.05); border-radius: 10px; }
+        
+        .cnn-grid { display: grid; grid-template-columns: repeat(8, 40px); gap: 2px; position: relative; }
+        .cnn-cell { width: 40px; height: 40px; background: #2c3e50; border-radius: 4px; }
+        .cnn-filter { position: absolute; width: 124px; height: 124px; border: 4px solid var(--accent-gold); background: rgba(193, 154, 107, 0.2); pointer-events: none; border-radius: 4px; transition: all 0.3s linear;}
+
+        .rnn-seq { display: flex; gap: 10px; font-size: 24px; font-family: 'Kanit'; font-weight: bold; align-items: center; }
+        .word-badge { padding: 10px 20px; background: var(--accent-blue); border-radius: 8px; transition: 0.5s; border: 2px solid transparent;}
+
+        .attention-box { text-align: center; font-size: 30px; font-family: 'Kanit'; }
+        .att-word { display: inline-block; margin: 0 10px; cursor: pointer; transition: 0.3s; padding: 5px 10px; border-radius: 5px; }
+        .att-word:hover { background: rgba(193, 154, 107, 0.2); }
+        .att-line { position: absolute; background: var(--accent-gold); height: 4px; transform-origin: left center; transition: 0.3s; opacity: 0; }
+
+        .llm-prob { display: flex; justify-content: space-between; background: #070e17; padding: 10px; margin-bottom: 5px; border-radius: 5px; }
+        .llm-prob-bar { background: var(--success); height: 100%; position: absolute; left: 0; top: 0; opacity: 0.3; z-index: 0; transition: width 0.5s;}
+
+        /* --- References Grid --- */
+        .ref-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; width: 100%; }
+        .ref-card { background-color: var(--bg-dark); border: 1px solid var(--accent-blue); border-radius: 10px; padding: 20px; border-left: 5px solid var(--accent-gold); display: flex; flex-direction: column; }
+        .ref-card h3 { font-size: 18px; color: #fff; margin-bottom: 5px; line-height: 1.4; }
+        .ref-card .meta { font-size: 14px; color: var(--text-muted); margin-bottom: 15px; }
+        .ref-card .desc { font-size: 15px; color: var(--text-main); flex-grow: 1; }
+        .ref-link { display: inline-block; margin-top: 15px; color: var(--accent-gold); text-decoration: none; font-weight: bold; font-family: 'Kanit'; font-size: 14px; }
+        .ref-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h2>วิวัฒนาการ AI</h2>
+        <button class="nav-btn active" onclick="showEra('era-linear', this)">1. Linear (เส้นตรง)</button>
+        <button class="nav-btn" onclick="showEra('era-ann', this)">2. ANN (เส้นโค้ง)</button>
+        <button class="nav-btn" onclick="showEra('era-cnn', this)">3. CNN (ดวงตา)</button>
+        <button class="nav-btn" onclick="showEra('era-rnn', this)">4. RNN (ความจำ)</button>
+        <button class="nav-btn" onclick="showEra('era-gan', this)">5. GANs (นักสร้าง)</button>
+        <button class="nav-btn" onclick="showEra('era-attention', this)">6. Attention (สมาธิ)</button>
+        <button class="nav-btn" onclick="showEra('era-transformer', this)">7. Transformer (ความเร็ว)</button>
+        <button class="nav-btn" onclick="showEra('era-llm', this)">8. LLM (ขนาดมหึมา)</button>
+        <button class="nav-btn" onclick="showEra('era-diffusion', this)">9. Diffusion (เสกภาพ)</button>
+        <div style="margin: 15px 20px; height: 1px; background: var(--accent-blue);"></div>
+        <button class="nav-btn" onclick="showEra('era-references', this)"><i class="fa-solid fa-book-bookmark"></i> 10. เปเปอร์พลิกโลก</button>
+    </div>
+
+    <div class="main-content">
+        
+        <div id="era-linear" class="era-section active">
+            <div class="era-header">
+                <h1>1. Linear Model (สมการเส้นตรง)</h1>
+                <p>คอขวด (Pain Point): โลกความจริงซับซ้อนเกินไป ข้อมูลแบบ XOR ไม่สามารถลากเส้นตรงแบ่งได้</p>
+                <div class="math-eq-box"><span class="math-label">Equation:</span>y = (w · x) + b</div>
+            </div>
+            <div class="simulator-container">
+                <svg class="graph" viewBox="0 0 100 100">
+                    <circle cx="20" cy="80" r="4" fill="#e63946" /><circle cx="80" cy="20" r="4" fill="#e63946" />
+                    <circle cx="20" cy="20" r="4" fill="#2a9d8f" /><circle cx="80" cy="80" r="4" fill="#2a9d8f" />
+                    <line id="linear-line" x1="50" y1="-50" x2="50" y2="150" stroke="#c19a6b" stroke-width="2" transform="rotate(45 50 50)" />
+                </svg>
+                <div class="controls">
+                    <label>หมุนเส้นตรงหาจุดแบ่ง (Weight/Bias)</label>
+                    <input type="range" min="0" max="180" value="45" oninput="document.getElementById('linear-line').setAttribute('transform', `rotate(${this.value} 50 50)`)">
+                    <p style="color: var(--danger); font-weight:bold;">สรุป: หมุนยังไงก็แบ่งกลุ่ม แดง-เขียว ออกจากกันด้วยเส้นเดียวไม่ได้!</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="era-ann" class="era-section">
+            <div class="era-header">
+                <h1>2. ANN (Artificial Neural Network)</h1>
+                <p>การแก้ปัญหา: เลิกขีดเส้นตรง แต่ใช้ Activation Function "บิดเบี้ยวพื้นที่ (Space Warping)" เพื่อโอบล้อมข้อมูล</p>
+                <div class="math-eq-box"><span class="math-label">Equation:</span>y = f(∑(w · x) + b)</div>
+            </div>
+            <div class="simulator-container">
+                <div style="position: relative; width: 100%; max-width: 400px; height: 300px; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.5); background: #000;">
+                    <canvas id="ann-canvas" width="400" height="300" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></canvas>
+                    <svg viewBox="0 0 100 100" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none;">
+                        <circle cx="20" cy="80" r="5" fill="#e63946" stroke="#fff" stroke-width="2" />
+                        <circle cx="80" cy="20" r="5" fill="#e63946" stroke="#fff" stroke-width="2" />
+                        <circle cx="20" cy="20" r="5" fill="#2a9d8f" stroke="#fff" stroke-width="2" />
+                        <circle cx="80" cy="80" r="5" fill="#2a9d8f" stroke="#fff" stroke-width="2" />
+                    </svg>
+                </div>
+                <div class="controls">
+                    <label>อัปเกรดสถาปัตยกรรม (Linear ➔ Deep Neural Network)</label>
+                    <input type="range" id="ann-slider" min="0" max="100" value="0" oninput="updateANN(this.value)">
+                    <p id="ann-status" style="color: var(--danger); font-weight:bold; margin-top: 10px;">โมเดลเส้นตรง: โดนสีแดง-เขียวปนกันมั่วไปหมด!</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="era-cnn" class="era-section">
+            <div class="era-header">
+                <h1>3. CNN (Convolutional Neural Network)</h1>
+                <p>การแก้ปัญหา: ใช้ Filter (แว่นขยายขนาดเล็ก) สแกนทั่วภาพ แทนการมองรวดเดียว เพื่อสกัด Feature</p>
+                <div class="math-eq-box"><span class="math-label">Equation:</span>Feature = ∑(X ⊙ F)</div>
+            </div>
+            <div class="simulator-container">
+                <div class="cnn-grid" id="cnn-grid"><div class="cnn-filter" id="cnn-filter"></div></div>
+                <div class="controls">
+                    <button class="btn" onclick="startCNN()">เริ่มกระบวนการ Convolution</button>
+                    <p id="cnn-status" style="margin-top: 15px; color: var(--accent-gold);">รอการสแกน...</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="era-rnn" class="era-section">
+            <div class="era-header">
+                <h1>4. RNN (Recurrent Neural Network)</h1>
+                <p>คอขวด (Pain Point): พอประโยคยาว AI เกิดอาการ "Vanishing Gradient" หรือความจำเสื่อม ลืมคำแรกๆ ไปหมด</p>
+                <div class="math-eq-box"><span class="math-label">Equation:</span>h_t = tanh(W_x·x_t + W_h·h_{t-1})</div>
+            </div>
+            <div class="simulator-container">
+                <div class="rnn-seq" id="rnn-seq"></div>
+                <div class="controls">
+                    <button class="btn" onclick="addRNNWord()">รับข้อมูลเวลา t+1</button>
+                    <button class="btn" style="background: var(--danger);" onclick="resetRNN()">Reset</button>
+                    <p style="margin-top: 15px; font-size: 14px;">สังเกตคำแรกๆ จะจางหายไป (ลืม) เพราะคูณค่าที่น้อยกว่า 1 ซ้ำๆ</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="era-gan" class="era-section">
+            <div class="era-header">
+                <h1>5. GANs (Generative Adversarial Networks)</h1>
+                <p>การแก้ปัญหา: ให้ AI 2 ตัวสู้กัน (ตำรวจจับโจร) เพื่อสร้างภาพปลอม แทนการใช้สมการวัดค่าเฉลี่ยที่ทำให้ภาพเบลอ</p>
+                <div class="math-eq-box"><span class="math-label">Equation:</span>min_G max_D [log(D(x)) + log(1 - D(G(z)))]</div>
+            </div>
+            <div class="simulator-container">
+                <div style="display:flex; gap: 40px; text-align:center; align-items:center;">
+                    <div><h3 style="color:#fff;">Generator (โจร)</h3><canvas id="gan-canvas" width="150" height="150" style="background:#000; border-radius:10px; margin-top:10px; border:2px solid var(--accent-blue);"></canvas></div>
+                    <div style="font-size:30px; color:var(--accent-gold);">VS</div>
+                    <div><h3 style="color:var(--accent-gold);">Discriminator (ตำรวจ)</h3><h1 id="gan-disc" style="color:var(--danger); font-size:40px; margin-top:30px;">100%</h1><p>ฟันธงว่า "ของปลอม"</p></div>
+                </div>
+                <div class="controls">
+                    <label>รอบการแข่งขัน (Epochs)</label>
+                    <input type="range" min="0" max="100" value="0" oninput="updateGAN(this.value)">
+                </div>
+            </div>
+        </div>
+
+        <div id="era-attention" class="era-section">
+            <div class="era-header">
+                <h1>6. Attention Mechanism (พลังแห่งสมาธิ)</h1>
+                <p>การแก้ปัญหา: เลิกพึ่งพาความจำยาวๆ แต่ให้หันไป "มองตรง (Attend)" ยังคำที่สัมพันธ์กันในอดีตได้เลย</p>
+                <div class="math-eq-box"><span class="math-label">Equation:</span>Attention(Q,K,V) = Softmax(Q·K^T / √d_k) × V</div>
+            </div>
+            <div class="simulator-container">
+                <div class="attention-box">
+                    <div style="margin-bottom: 30px; color: #aaa; font-size: 24px;">Source: 
+                        <span class="att-word" id="sw1">I</span>
+                        <span class="att-word" id="sw2" style="border-bottom: 2px solid var(--accent-gold);">arrived</span>
+                        <span class="att-word" id="sw3">at</span>
+                        <span class="att-word" id="sw4">the</span>
+                        <span class="att-word" id="sw5">river</span>
+                        <span class="att-word" id="sw6" style="border-bottom: 2px solid var(--accent-gold);">bank</span>
+                    </div>
+                    <div>Target: 
+                        <span class="att-word word-badge" onmouseover="showAttention(true)" onmouseout="showAttention(false)">ตลิ่ง</span>
+                    </div>
+                </div>
+                <div class="controls">
+                    <p>ลองเอาเมาส์ชี้ที่คำว่า <b>"ตลิ่ง"</b> เพื่อดูว่า AI โฟกัสน้ำหนัก (Attention Weights) ไปที่คำไหน</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="era-transformer" class="era-section">
+            <div class="era-header">
+                <h1>7. Transformer (สถาปัตยกรรมไร้กาลเวลา)</h1>
+                <p>การแก้ปัญหา: โยน RNN ทิ้งไป แล้วป้อนทุกคำเข้า GPU "พร้อมกันทีเดียว (Parallel)" ปลดล็อกข้อจำกัดความเร็ว</p>
+                <div class="math-eq-box"><span class="math-label">Equation:</span>Parallel Processing via Multi-Head Self-Attention</div>
+            </div>
+            <div class="simulator-container">
+                <div class="rnn-seq" id="trans-words">
+                    <div class="word-badge">AI</div><div class="word-badge">will</div><div class="word-badge">change</div><div class="word-badge">the</div><div class="word-badge">world</div>
+                </div>
+                <div class="controls">
+                    <button class="btn" style="background: var(--accent-blue);" onclick="simSeq()">จำลอง RNN (ช้า/คอขวด)</button>
+                    <button class="btn" style="background: var(--success);" onclick="simPar()">จำลอง Transformer (เร็ว)</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="era-llm" class="era-section">
+            <div class="era-header">
+                <h1>8. LLM (Large Language Model)</h1>
+                <p>ปรากฏการณ์ (Emergence): เมื่อขยายพารามิเตอร์ให้ยักษ์ใหญ่ AI ไม่ได้แค่เดาคำถูกแกรมม่า แต่เริ่มมีความคิดเชิงตรรกะ</p>
+                <div class="math-eq-box"><span class="math-label">Equation:</span>P(w_{next} | context) = Softmax(Transformer_Output)</div>
+            </div>
+            <div class="simulator-container" style="align-items: stretch;">
+                <h3 style="text-align: center; margin-bottom:20px;">Prompt: "I drop a glass on concrete, it will..."</h3>
+                <div style="position:relative; background:#070e17; padding:20px; border-radius:10px; margin-bottom:20px;">
+                    <div class="llm-prob"><span style="position:relative; z-index:1;" id="llm-w1">be (Grammar guess)</span><span style="position:relative; z-index:1;" id="llm-p1">60%</span><div class="llm-prob-bar" id="llm-b1" style="width:60%; background:#778da9;"></div></div>
+                    <div class="llm-prob"><span style="position:relative; z-index:1;" id="llm-w2">fall (Context guess)</span><span style="position:relative; z-index:1;" id="llm-p2">30%</span><div class="llm-prob-bar" id="llm-b2" style="width:30%; background:#778da9;"></div></div>
+                    <div class="llm-prob"><span style="position:relative; z-index:1;" id="llm-w3">shatter (Reasoning/Physics)</span><span style="position:relative; z-index:1; font-weight:bold; color:var(--accent-gold);" id="llm-p3">10%</span><div class="llm-prob-bar" id="llm-b3" style="width:10%; background:var(--accent-gold);"></div></div>
+                </div>
+                <div class="controls" style="margin: 0 auto;">
+                    <label>ขนาดโมเดล (Parameters Scaling Law)</label>
+                    <input type="range" min="1" max="100" value="1" oninput="updateLLM(this.value)">
+                    <div style="display:flex; justify-content:space-between; font-size:12px; color:#aaa;"><span>10 Million (เล็ก)</span><span>100 Billion (ใหญ่ระดับ GPT)</span></div>
+                    <p id="llm-status" style="margin-top:15px; font-weight:bold;">AI เด็กน้อย: เดาคำตามหลักไวยากรณ์พื้นฐาน</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="era-diffusion" class="era-section">
+            <div class="era-header">
+                <h1>9. Diffusion Models (ศิลปินแห่งยุคปัจจุบัน)</h1>
+                <p>การแก้ปัญหา: ทิ้ง GANs เปลี่ยนมาใช้หลักฟิสิกส์ "ค่อยๆ ลบสัญญาณรบกวน (Denoise)" โดยมี Prompt เป็นตัวนำทาง</p>
+                <div class="math-eq-box"><span class="math-label">Equation:</span>Img_{t-1} = Img_t - AI_Predict(Noise_t, Prompt)</div>
+            </div>
+            <div class="simulator-container">
+                <div style="position:relative; width: 250px; height: 250px; border:2px solid var(--accent-gold); border-radius:15px; overflow:hidden;">
+                    <div style="position:absolute; width:100%; height:100%; background:radial-gradient(circle, #e63946, #415a77); display:flex; align-items:center; justify-content:center; font-size:80px; top:0; left:0;">🤖</div>
+                    <canvas id="diff-canvas" width="250" height="250" style="position:absolute; top:0; left:0; z-index:10;"></canvas>
+                </div>
+                <div class="controls">
+                    <p style="color:var(--accent-gold);">Prompt: "หุ่นยนต์สุดล้ำ" (CLIP Vector Guidance)</p>
+                    <label>กระบวนการ Denoising Steps</label>
+                    <input type="range" min="0" max="100" value="0" oninput="document.getElementById('diff-canvas').style.opacity = 1 - (this.value/100)">
+                </div>
+            </div>
+        </div>
+
+        <div id="era-references" class="era-section">
+            <div class="era-header">
+                <h1>📚 เปเปอร์ระดับตำนานที่พลิกวงการ AI</h1>
+                <p>ลายแทงสำหรับวิศวกรและนักศึกษาที่ต้องการศึกษาทฤษฎีเชิงลึก (Seminal Papers)</p>
+            </div>
+            <div class="simulator-container scrollable-container">
+                <div class="ref-grid">
+                    <div class="ref-card">
+                        <h3>1. Backpropagation (1986)</h3>
+                        <p class="meta">David E. Rumelhart, Geoffrey E. Hinton, et al.</p>
+                        <p class="desc"><b>ทำไมต้องอ่าน:</b> จุดกำเนิดสมการสอน AI ให้ปรับ Weight ตัวเองได้ ปลดล็อกข้อจำกัดของยุค Linear</p>
+                        <a href="https://scholar.google.com/scholar?q=Learning+representations+by+back-propagating+errors" target="_blank" class="ref-link">ค้นหาบน Google Scholar <i class="fa-solid fa-arrow-right"></i></a>
+                    </div>
+                    <div class="ref-card">
+                        <h3>2. AlexNet / CNN (2012)</h3>
+                        <p class="meta">Alex Krizhevsky, Ilya Sutskever, Geoffrey Hinton</p>
+                        <p class="desc"><b>ทำไมต้องอ่าน:</b> จุดระเบิดยุค Deep Learning ที่พิสูจน์ว่า CNN บน GPU สามารถแยกแยะภาพชนะมนุษย์ได้</p>
+                        <a href="https://scholar.google.com/scholar?q=ImageNet+Classification+with+Deep+Convolutional+Neural+Networks" target="_blank" class="ref-link">ค้นหาบน Google Scholar <i class="fa-solid fa-arrow-right"></i></a>
+                    </div>
+                    <div class="ref-card">
+                        <h3>3. LSTM / RNN (1997)</h3>
+                        <p class="meta">Sepp Hochreiter, Jürgen Schmidhuber</p>
+                        <p class="desc"><b>ทำไมต้องอ่าน:</b> สถาปัตยกรรมที่เข้ามาแก้ปัญหา "ความจำเสื่อม (Vanishing Gradient)" ทำให้โมเดลจดจำข้อมูลลำดับยาวๆ ได้</p>
+                        <a href="https://scholar.google.com/scholar?q=Long+Short-Term+Memory+Hochreiter" target="_blank" class="ref-link">ค้นหาบน Google Scholar <i class="fa-solid fa-arrow-right"></i></a>
+                    </div>
+                    <div class="ref-card">
+                        <h3>4. GANs (2014)</h3>
+                        <p class="meta">Ian J. Goodfellow, et al.</p>
+                        <p class="desc"><b>ทำไมต้องอ่าน:</b> ต้นกำเนิด Generative AI ยุคแรก ที่ใช้ทฤษฎีเกมให้โจรและตำรวจสู้กันเพื่อสร้างภาพสังเคราะห์</p>
+                        <a href="https://scholar.google.com/scholar?q=Generative+Adversarial+Nets" target="_blank" class="ref-link">ค้นหาบน Google Scholar <i class="fa-solid fa-arrow-right"></i></a>
+                    </div>
+                    <div class="ref-card" style="border-left-color: var(--danger);">
+                        <h3>5. Attention Is All You Need (2017)</h3>
+                        <p class="meta">Ashish Vaswani, et al. (Google Brain)</p>
+                        <p class="desc"><b>ทำไมต้องอ่าน:</b> <span style="color:var(--danger); font-weight:bold;">คัมภีร์ไบเบิลของยุคนี้!</span> โยน RNN ทิ้งไปและใช้ Self-Attention 100% ทำให้เทรนข้อมูลมหาศาลแบบขนานได้</p>
+                        <a href="https://scholar.google.com/scholar?q=Attention+Is+All+You+Need" target="_blank" class="ref-link" style="color:var(--danger);">ค้นหาบน Google Scholar <i class="fa-solid fa-arrow-right"></i></a>
+                    </div>
+                    <div class="ref-card">
+                        <h3>6. Language Models are Few-Shot Learners (2020)</h3>
+                        <p class="meta">Tom B. Brown, et al. (OpenAI - GPT-3)</p>
+                        <p class="desc"><b>ทำไมต้องอ่าน:</b> พิสูจน์เรื่อง Scaling Law ว่าถ้าทำ Transformer ให้ใหญ่ระดับแสนล้านพารามิเตอร์ มันจะเกิดความฉลาดขึ้นเอง (Emergence)</p>
+                        <a href="https://scholar.google.com/scholar?q=Language+Models+are+Few-Shot+Learners" target="_blank" class="ref-link">ค้นหาบน Google Scholar <i class="fa-solid fa-arrow-right"></i></a>
+                    </div>
+                    <div class="ref-card">
+                        <h3>7. Denoising Diffusion Probabilistic Models (2020)</h3>
+                        <p class="meta">Jonathan Ho, Ajay Jain, Pieter Abbeel</p>
+                        <p class="desc"><b>ทำไมต้องอ่าน:</b> รากฐานของ Midjourney/DALL-E ที่นำฟิสิกส์อุณหพลศาสตร์มาลบ Noise สกัดออกมาเป็นรูปภาพ</p>
+                        <a href="https://scholar.google.com/scholar?q=Denoising+Diffusion+Probabilistic+Models" target="_blank" class="ref-link">ค้นหาบน Google Scholar <i class="fa-solid fa-arrow-right"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- Navigation ---
+        function showEra(eraId, btn) {
+            document.querySelectorAll('.era-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(eraId).classList.add('active');
+            btn.classList.add('active');
+            
+            if(eraId === 'era-cnn' && document.getElementById('cnn-grid').children.length <= 1) setupCNN();
+            if(eraId === 'era-diffusion') drawNoise(document.getElementById('diff-canvas'));
+        }
+
+        // --- 2. ANN (Heatmap Decision Boundary) ---
+        function drawDecisionBoundary(value) {
+            const canvas = document.getElementById('ann-canvas');
+            if(!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width;
+            const h = canvas.height;
+            const imgData = ctx.createImageData(w, h);
+
+            const t = value / 100; // แปลงค่า 0 ถึง 1
+
+            for (let y = 0; y < h; y++) {
+                for (let x = 0; x < w; x++) {
+                    const nx = (x / w) * 2 - 1;
+                    const ny = (y / h) * 2 - 1;
+
+                    // 1. ตรรกะของ Linear Model (พยายามแบ่งด้วยเส้นตรงแนวทแยง)
+                    const linearScore = nx - ny;
+                    // 2. ตรรกะของ Non-linear Model (สมการตัดแบ่ง 4 จตุภาค)
+                    const nonLinearScore = nx * ny * 8; 
+
+                    // 3. ผสมผสานสมการ
+                    const score = (linearScore * (1 - t)) + (nonLinearScore * t);
+
+                    // 4. Activation Function (Sigmoid)
+                    const crispness = 4 + (t * 10); 
+                    const prob = 1 / (1 + Math.exp(-score * crispness));
+
+                    // สีแดง (230, 57, 70) ➔ สีเขียว (42, 157, 143)
+                    const r = 230 * (1 - prob) + 42 * prob;
+                    const g = 57 * (1 - prob) + 157 * prob;
+                    const b = 70 * (1 - prob) + 143 * prob;
+
+                    const index = (y * w + x) * 4;
+                    imgData.data[index] = r;
+                    imgData.data[index+1] = g;
+                    imgData.data[index+2] = b;
+                    imgData.data[index+3] = 200; // ความโปร่งแสง
+                }
+            }
+            ctx.putImageData(imgData, 0, 0);
+        }
+
+        function updateANN(val) {
+            drawDecisionBoundary(val);
+            const status = document.getElementById('ann-status');
+            if(val < 30) {
+                status.textContent = "Linear Model: ทำได้แค่แบ่งครึ่งทแยงมุม ทายผิดไปครึ่งนึง (Underfitting)";
+                status.style.color = "var(--danger)";
+            } else if (val < 70) {
+                status.textContent = "เริ่มใส่ Hidden Layer: พื้นที่การตัดสินใจเริ่มโค้งงอ";
+                status.style.color = "var(--text-main)";
+            } else {
+                status.textContent = "Aha Moment!: ANN บิดพื้นที่จนโอบล้อมสีแดงและเขียวแยกกัน 100%";
+                status.style.color = "var(--success)";
+            }
+        }
+        
+        // วาด Heatmap ครั้งแรก
+        setTimeout(() => { if(document.getElementById('ann-canvas')) drawDecisionBoundary(0); }, 100);
+
+        // --- 3. CNN ---
+        function setupCNN() {
+            const grid = document.getElementById('cnn-grid');
+            grid.innerHTML = '<div class="cnn-filter" id="cnn-filter"></div>';
+            for(let i=0; i<64; i++) {
+                let cell = document.createElement('div'); cell.className = 'cnn-cell';
+                let r = Math.floor(i/8), c = i%8;
+                if(r===c || r+c===7) cell.style.background = '#e0e1dd';
+                grid.appendChild(cell);
+            }
+        }
+        setupCNN();
+        function startCNN() {
+            const filter = document.getElementById('cnn-filter');
+            let step = 0; filter.style.display = 'block';
+            document.getElementById('cnn-status').textContent = "สแกน... (Weight Sharing)";
+            let iv = setInterval(() => {
+                let r = Math.floor(step/6), c = step%6;
+                filter.style.top = (r*42)+'px'; filter.style.left = (c*42)+'px';
+                step++;
+                if(step > 35) { clearInterval(iv); document.getElementById('cnn-status').textContent = "สกัด Feature สำเร็จ!"; }
+            }, 100);
+        }
+
+        // --- 4. RNN ---
+        const rnnWords = ["ฉัน","กิน","ข้าว","ที่","ร้าน","จน","อิ่ม"];
+        let rIdx = 0;
+        function addRNNWord() {
+            if(rIdx >= rnnWords.length) return;
+            let el = document.createElement('div');
+            el.className = 'word-badge'; el.textContent = rnnWords[rIdx];
+            document.getElementById('rnn-seq').appendChild(el);
+            rIdx++;
+            
+            let children = document.getElementById('rnn-seq').children;
+            for(let i=0; i<children.length; i++) {
+                let age = children.length - 1 - i;
+                children[i].style.opacity = Math.max(0.1, 1 - (age*0.2));
+            }
+        }
+        function resetRNN() { document.getElementById('rnn-seq').innerHTML = ''; rIdx = 0; }
+
+        // --- 5. GAN & 9. Diffusion ---
+        function drawNoise(canvas) {
+            if(!canvas) return;
+            const ctx = canvas.getContext('2d');
+            let id = ctx.createImageData(canvas.width, canvas.height);
+            for(let i=0; i<id.data.length; i+=4) {
+                let c = Math.random()*255;
+                id.data[i] = id.data[i+1] = id.data[i+2] = c; id.data[i+3] = 255;
+            }
+            ctx.putImageData(id, 0, 0);
+        }
+        drawNoise(document.getElementById('gan-canvas'));
+        drawNoise(document.getElementById('diff-canvas'));
+
+        function updateGAN(val) {
+            const ctx = document.getElementById('gan-canvas').getContext('2d');
+            drawNoise(document.getElementById('gan-canvas'));
+            if(val > 0) {
+                ctx.fillStyle = `rgba(193,154,107,${val/100})`;
+                ctx.beginPath(); ctx.arc(75,75,40,0,Math.PI*2); ctx.fill();
+            }
+            let conf = 100 - (val/2);
+            document.getElementById('gan-disc').textContent = Math.round(conf)+'%';
+            if(conf <= 55) document.getElementById('gan-disc').style.color = 'var(--success)';
+            else document.getElementById('gan-disc').style.color = 'var(--danger)';
+        }
+
+        // --- 6. Attention ---
+        function showAttention(active) {
+            const w5 = document.getElementById('sw5'); 
+            const w6 = document.getElementById('sw6'); 
+            if(active) {
+                w5.style.background = 'rgba(193,154,107,0.8)'; w5.style.color = '#000'; 
+                w6.style.background = 'rgba(193,154,107,0.4)'; w6.style.color = '#fff'; 
+            } else {
+                w5.style.background = 'transparent'; w5.style.color = 'var(--text-main)';
+                w6.style.background = 'transparent'; w6.style.color = 'var(--text-main)';
+            }
+        }
+
+        // --- 7. Transformer ---
+        let tIv;
+        function simSeq() {
+            clearInterval(tIv);
+            let kids = document.getElementById('trans-words').children;
+            for(let k of kids) { k.style.background = 'var(--accent-blue)'; k.style.color = '#fff'; }
+            let i = 0;
+            tIv = setInterval(() => {
+                for(let k of kids) k.style.background = 'var(--accent-blue)';
+                kids[i].style.background = 'var(--accent-gold)'; kids[i].style.color = '#000';
+                i++; if(i>=kids.length) clearInterval(tIv);
+            }, 400);
+        }
+        function simPar() {
+            clearInterval(tIv);
+            let kids = document.getElementById('trans-words').children;
+            for(let k of kids) { k.style.background = 'var(--success)'; k.style.color = '#fff'; }
+        }
+
+        // --- 8. LLM ---
+        function updateLLM(val) {
+            const p1 = document.getElementById('llm-p1'), b1 = document.getElementById('llm-b1');
+            const p2 = document.getElementById('llm-p2'), b2 = document.getElementById('llm-b2');
+            const p3 = document.getElementById('llm-p3'), b3 = document.getElementById('llm-b3');
+            const status = document.getElementById('llm-status');
+
+            let probShatter = 10 + (val * 0.85); 
+            let probFall = Math.max(0, 30 - (val * 0.2));
+            let probBe = Math.max(0, 60 - (val * 0.65));
+
+            let total = probShatter + probFall + probBe;
+            probShatter = (probShatter/total)*100; probFall = (probFall/total)*100; probBe = (probBe/total)*100;
+
+            p1.textContent = Math.round(probBe)+'%'; b1.style.width = probBe+'%';
+            p2.textContent = Math.round(probFall)+'%'; b2.style.width = probFall+'%';
+            p3.textContent = Math.round(probShatter)+'%'; b3.style.width = probShatter+'%';
+
+            if(val < 30) { status.textContent = "AI เด็กน้อย: เดาคำตามแกรมม่ามั่วๆ (be)"; status.style.color = "#778da9"; }
+            else if (val < 70) { status.textContent = "AI วัยรุ่น: เริ่มจับบริบทคำว่า drop ได้ (fall)"; status.style.color = "var(--text-main)"; }
+            else { status.textContent = "Emergent Ability!: โมเดลเกิดความเข้าใจฟิสิกส์ (shatter)"; status.style.color = "var(--accent-gold)"; }
+        }
+
+    </script>
+</body>
+</html>
